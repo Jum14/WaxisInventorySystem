@@ -1,0 +1,320 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <title>{% block title %}INVENTIQ{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
+    {% block extra_head %}{% endblock %}
+</head>
+
+<body class="{% if not request.user.is_authenticated %}auth-page{% endif %}">
+
+<div class="app-shell">
+
+    {% if request.user.is_authenticated %}
+
+    <!-- =========================
+         SIDEBAR
+    ========================== -->
+    <aside class="sidebar" id="sidebar">
+
+        <!-- BRAND -->
+        <a href="{% url 'dashboard:home' %}" class="brand">
+
+            <img
+                src="{% static 'images/waxis-logo.png' %}"
+                alt="INVENTIQ Inventory System Logo"
+                class="brand-logo"
+            >
+
+            <div class="brand-text">
+                <strong>INVENTIQ</strong>
+                <small>Inventory System</small>
+            </div>
+
+        </a>
+
+
+        <!-- =========================
+             NAVIGATION
+        ========================== -->
+        <nav class="nav-menu">
+
+            <!-- DASHBOARD -->
+            <a
+                class="nav-link {% if request.resolver_match.url_name == 'home' or request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                href="{% url 'dashboard:home' %}"
+            >
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+
+
+            <!-- INVENTORY -->
+            <a
+                class="nav-link {% if request.resolver_match.url_name == 'inventory' %}active{% endif %}"
+                href="{% url 'inventory' %}"
+            >
+                <i class="bi bi-box-seam-fill"></i>
+                <span>Inventory</span>
+            </a>
+
+
+            <!-- =========================
+                 MANAGER / OWNER / DEVELOPER
+            ========================== -->
+
+            {% if request.user.profile.role != 'CREW' %}
+
+                <!-- TRANSACTIONS -->
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'transactions' %}active{% endif %}"
+                    href="{% url 'transactions' %}"
+                >
+                    <i class="bi bi-arrow-left-right"></i>
+                    <span>Transactions</span>
+                </a>
+
+
+                <!-- PROCUREMENT -->
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'procurement' %}active{% endif %}"
+                    href="{% url 'procurement' %}"
+                >
+                    <i class="bi bi-cart3"></i>
+                    <span>Procurement</span>
+                </a>
+
+
+                <!-- FORECAST -->
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'forecast' %}active{% endif %}"
+                    href="{% url 'forecasting:forecast' %}"
+                >
+                    <i class="bi bi-graph-up-arrow"></i>
+                    <span>Forecast</span>
+                </a>
+
+
+                <!-- REPORTS -->
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'reports' %}active{% endif %}"
+                    href="{% url 'reports' %}"
+                >
+                    <i class="bi bi-bar-chart-line-fill"></i>
+                    <span>Reports</span>
+                </a>
+
+
+                <!-- AUDIT LOGS -->
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'audit_logs' %}active{% endif %}"
+                    href="{% url 'audit_logs' %}"
+                >
+                    <i class="bi bi-shield-check"></i>
+                    <span>Audit Logs</span>
+                </a>
+
+            {% else %}
+
+                <!-- =========================
+                     CREW ONLY
+                ========================== -->
+
+                <!-- DEDUCT STOCK -->
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'deduct_stock' %}active{% endif %}"
+                    href="{% url 'deduct_stock' %}"
+                >
+                    <i class="bi bi-dash-circle-fill"></i>
+                    <span>Deduct Stock</span>
+                </a>
+
+
+                <!-- MY TRANSACTIONS -->
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'transactions' %}active{% endif %}"
+                    href="{% url 'transactions' %}"
+                >
+                    <i class="bi bi-clock-history"></i>
+                    <span>My Transactions</span>
+                </a>
+
+            {% endif %}
+
+
+            <!-- =========================
+                 OWNER / DEVELOPER
+                 ADMINISTRATION
+            ========================== -->
+
+            {% if request.user.profile.role == 'OWNER' or request.user.profile.role == 'DEVELOPER' %}
+
+                <div class="nav-section">
+                    Administration
+                </div>
+
+
+                <!-- USERS -->
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'users' %}active{% endif %}"
+                    href="{% url 'accounts:users' %}"
+                >
+                    <i class="bi bi-people-fill"></i>
+                    <span>Users</span>
+                </a>
+
+            {% endif %}
+
+        </nav>
+
+
+        <!-- =========================
+             SIDEBAR FOOTER
+        ========================== -->
+
+        <div class="sidebar-footer">
+
+            <!-- DJANGO ADMIN -->
+            {% if request.user.profile.role == 'DEVELOPER' %}
+
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'index' and request.resolver_match.namespace == 'admin' %}active{% endif %}"
+                    href="/admin/"
+                >
+                    <i class="bi bi-gear-fill"></i>
+                    <span>Django Admin</span>
+                </a>
+
+            {% endif %}
+
+
+            <!-- LOGOUT -->
+            <form method="post" action="{% url 'accounts:logout' %}">
+
+                {% csrf_token %}
+
+                <button
+                    class="logout-btn"
+                    type="submit"
+                >
+                    <i class="bi bi-box-arrow-right"></i>
+                    <span>Logout</span>
+                </button>
+
+            </form>
+
+        </div>
+
+    </aside>
+
+    {% endif %}
+
+
+    <!-- =========================
+         MAIN AREA
+    ========================== -->
+
+    <main class="main-area {% if not request.user.is_authenticated %}auth-main{% endif %}">
+
+        {% if request.user.is_authenticated %}
+
+        <!-- TOP BAR -->
+        <header class="topbar">
+
+            <!-- MOBILE SIDEBAR BUTTON -->
+            <button
+                class="mobile-toggle"
+                type="button"
+                onclick="toggleSidebar()"
+            >
+                <i class="bi bi-list"></i>
+            </button>
+
+
+            <!-- PAGE TITLE -->
+            <div>
+
+                <div class="topbar-title">
+                    {% block page_title %}
+                        Dashboard
+                    {% endblock %}
+                </div>
+
+                <div class="topbar-subtitle">
+                    SND Foods International Inc. · INVENTIQ
+                </div>
+
+            </div>
+
+
+            <!-- USER INFORMATION -->
+            <div class="ms-auto user-chip">
+
+                <!-- USER AVATAR -->
+                <div class="avatar">
+                    {{ request.user.username|first|upper }}
+                </div>
+
+
+                <!-- USER DETAILS -->
+                <div class="user-meta">
+
+                    <strong>
+                        {{ request.user.get_full_name|default:request.user.username }}
+                    </strong>
+
+                    <small>
+                        {{ request.user.profile.get_role_display }}
+                    </small>
+
+                </div>
+
+            </div>
+
+        </header>
+
+        {% endif %}
+
+
+        <!-- =========================
+             PAGE CONTENT
+        ========================== -->
+
+        <section class="content-area">
+            {% block content %}{% endblock %}
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- =========================
+     JAVASCRIPT
+========================== -->
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+
+        if (sidebar) {
+            sidebar.classList.toggle("show");
+        }
+    }
+</script>
+
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>

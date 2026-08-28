@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Reports · Waxi's{% endblock %}
+{% block page_title %}Reports & Insights{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>Reports</h1><p>Inventory, stock movement, procurement, and consumption overview.</p></div><button class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer me-2"></i>Print Report</button></div>
+<div class="stats-grid">
+<div class="stat-card"><span>Ingredients</span><strong>{{ total_ingredients }}</strong></div>
+<div class="stat-card"><span>Transactions</span><strong>{{ total_transactions }}</strong></div>
+<div class="stat-card"><span>Procurement Requests</span><strong>{{ total_procurements }}</strong></div>
+</div>
+<div class="dashboard-grid">
+<div class="panel"><div class="panel-header"><h3>Recent Stock Movement</h3></div>
+{% for tx in transactions %}
+<div class="activity-row"><div class="activity-icon"><i class="bi bi-arrow-left-right"></i></div><div><strong>{{ tx.ingredient.name }}</strong><p>{{ tx.get_transaction_type_display }} · {{ tx.quantity }} {{ tx.ingredient.unit }}</p></div><small>{{ tx.created_at|date:"M d, H:i" }}</small></div>
+{% empty %}<div class="empty-mini">No data.</div>{% endfor %}
+</div>
+<div class="panel"><div class="panel-header"><h3>Procurement Overview</h3></div>
+{% for item in procurements %}
+<div class="health-row"><div><strong>PR-{{ item.pk|stringformat:"04d" }}</strong><small>{{ item.ingredient.name }} · {{ item.requested_quantity }} {{ item.ingredient.unit }}</small></div><span class="status-badge status-{{ item.status|lower }}">{{ item.get_status_display }}</span></div>
+{% empty %}<div class="empty-mini">No procurement data.</div>{% endfor %}
+</div>
+</div>
+{% endblock %}

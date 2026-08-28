@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Forecast · Waxi's{% endblock %}
+{% block page_title %}Forecast & Predictions{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>Forecast & Predictions</h1><p>Prototype view for predictive procurement and stockout risk.</p></div></div>
+<div class="notice-box"><i class="bi bi-info-circle-fill"></i><div><strong>UI Prototype</strong><p>This page currently uses sample calculations. The future implementation can connect historical usage data to a forecasting model such as Prophet.</p></div></div>
+<div class="panel">
+<div class="table-responsive">
+<table class="table align-middle">
+<thead><tr><th>Ingredient</th><th>Current Stock</th><th>Avg. Daily Usage</th><th>Predicted Stockout</th><th>Recommended Reorder</th><th>Risk</th></tr></thead>
+<tbody>
+{% for row in rows %}
+<tr><td><strong>{{ row.ingredient.name }}</strong></td><td>{{ row.ingredient.quantity }} {{ row.ingredient.unit }}</td><td>{{ row.daily }} {{ row.ingredient.unit }}/day</td><td>{{ row.days }} days</td><td>{{ row.reorder }} {{ row.ingredient.unit }}</td><td><span class="risk risk-{{ row.risk|lower }}">{{ row.risk }}</span></td></tr>
+{% empty %}<tr><td colspan="6"><div class="empty-mini py-5">No ingredients available.</div></td></tr>{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+{% endblock %}

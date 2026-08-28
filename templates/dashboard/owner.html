@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Owner Dashboard · INVENTIQ
+{% endblock %}
+
+{% block page_title %}
+    Owner Dashboard
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-heading">
+
+    <div>
+
+        <h1>
+            Business Overview
+        </h1>
+
+        <p>
+            High-level visibility across INVENTIQ inventory operations.
+        </p>
+
+    </div>
+
+
+    <a
+        href="{% url 'accounts:users' %}"
+        class="btn btn-primary"
+    >
+
+        <i class="bi bi-people me-2"></i>
+
+        Manage Users
+
+    </a>
+
+</div>
+
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+
+        <span>
+            Total Ingredients
+        </span>
+
+        <strong>
+            {{ total }}
+        </strong>
+
+        <i class="bi bi-box-seam"></i>
+
+    </div>
+
+
+    <div class="stat-card warning">
+
+        <span>
+            Low Stock
+        </span>
+
+        <strong>
+            {{ low }}
+        </strong>
+
+        <i class="bi bi-exclamation-triangle"></i>
+
+    </div>
+
+
+    <div class="stat-card danger">
+
+        <span>
+            Critical / Out
+        </span>
+
+        <strong>
+            {{ critical }}
+        </strong>
+
+        <i class="bi bi-x-octagon"></i>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <span>
+            Pending Procurement
+        </span>
+
+        <strong>
+            {{ pending }}
+        </strong>
+
+        <i class="bi bi-cart3"></i>
+
+    </div>
+
+</div>
+
+
+<div class="dashboard-grid">
+
+
+    <!-- INVENTORY HEALTH -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>
+                Inventory Health
+            </h3>
+
+        </div>
+
+
+        <div class="health-list">
+
+            {% for item in ingredients|slice:":10" %}
+
+            <div class="health-row">
+
+                <div>
+
+                    <strong>
+                        {{ item.name }}
+                    </strong>
+
+                    <small>
+                        {{ item.quantity }} {{ item.unit }}
+                    </small>
+
+                </div>
+
+
+                <span class="status-badge status-{{ item.status|lower }}">
+
+                    {{ item.status_label }}
+
+                </span>
+
+            </div>
+
+
+            {% empty %}
+
+            <div class="empty-mini">
+                No ingredients yet.
+            </div>
+
+            {% endfor %}
+
+        </div>
+
+    </div>
+
+
+    <!-- RECENT OPERATIONS -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>
+                Recent Operations
+            </h3>
+
+        </div>
+
+
+        {% for tx in transactions %}
+
+        <div class="activity-row">
+
+            <div class="activity-icon">
+
+                <i class="bi bi-activity"></i>
+
+            </div>
+
+
+            <div>
+
+                <strong>
+                    {{ tx.user.username|default:"System" }}
+                </strong>
+
+                <p>
+                    {{ tx.get_transaction_type_display }}
+                    ·
+                    {{ tx.ingredient.name }}
+                </p>
+
+            </div>
+
+
+            <small>
+                {{ tx.created_at|date:"M d, H:i" }}
+            </small>
+
+        </div>
+
+
+        {% empty %}
+
+        <div class="empty-mini">
+            No activity yet.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

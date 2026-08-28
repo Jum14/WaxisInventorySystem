@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Crew Dashboard · INVENTIQ
+{% endblock %}
+
+{% block page_title %}
+    Crew Dashboard
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-heading">
+
+    <div>
+
+        <h1>
+            Good day,
+            {{ request.user.first_name|default:request.user.username }}.
+        </h1>
+
+        <p>
+            Quick kitchen inventory operations.
+        </p>
+
+    </div>
+
+</div>
+
+
+<div class="crew-action-card">
+
+    <div>
+
+        <span class="eyebrow">
+            Kitchen Operations
+        </span>
+
+        <h2>
+            Record an ingredient deduction
+        </h2>
+
+        <p>
+            Keep inventory updated while preparing orders.
+        </p>
+
+    </div>
+
+
+    <a
+        href="{% url 'deduct_stock' %}"
+        class="btn btn-primary btn-lg"
+    >
+
+        <i class="bi bi-dash-circle me-2"></i>
+
+        Deduct Stock
+
+    </a>
+
+</div>
+
+
+<div class="stats-grid two">
+
+
+    <div class="stat-card">
+
+        <span>
+            My Transactions
+        </span>
+
+        <strong>
+            {{ today_count }}
+        </strong>
+
+        <i class="bi bi-clock-history"></i>
+
+    </div>
+
+
+    <div class="stat-card warning">
+
+        <span>
+            Stock Alerts
+        </span>
+
+        <strong>
+            {{ low|length }}
+        </strong>
+
+        <i class="bi bi-bell"></i>
+
+    </div>
+
+
+</div>
+
+
+<div class="dashboard-grid">
+
+
+    <!-- STOCK ALERTS -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>
+                Stock Alerts
+            </h3>
+
+        </div>
+
+
+        {% for item in low %}
+
+        <div class="health-row">
+
+            <div>
+
+                <strong>
+                    {{ item.name }}
+                </strong>
+
+                <small>
+                    {{ item.quantity }} {{ item.unit }}
+                </small>
+
+            </div>
+
+
+            <span class="status-badge status-{{ item.status|lower }}">
+
+                {{ item.status_label }}
+
+            </span>
+
+        </div>
+
+
+        {% empty %}
+
+        <div class="empty-mini">
+            No low-stock items.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+
+    <!-- MY RECENT TRANSACTIONS -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>
+                My Recent Transactions
+            </h3>
+
+        </div>
+
+
+        {% for tx in transactions %}
+
+        <div class="activity-row">
+
+            <div class="activity-icon">
+
+                <i class="bi bi-arrow-down-circle"></i>
+
+            </div>
+
+
+            <div>
+
+                <strong>
+                    {{ tx.ingredient.name }}
+                </strong>
+
+                <p>
+                    {{ tx.get_transaction_type_display }}
+                    ·
+                    {{ tx.quantity }}
+                    {{ tx.ingredient.unit }}
+                </p>
+
+            </div>
+
+
+            <small>
+                {{ tx.created_at|date:"M d, H:i" }}
+            </small>
+
+        </div>
+
+
+        {% empty %}
+
+        <div class="empty-mini">
+            No transactions yet.
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

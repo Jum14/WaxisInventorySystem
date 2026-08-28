@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}Procurement · Waxi's{% endblock %}
+{% block page_title %}Procurement{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>Procurement</h1><p>Manage replenishment requests and purchasing workflow.</p></div><a href="{% url 'procurement_create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i>New Request</a></div>
+<div class="stats-grid">
+<div class="stat-card"><span>Pending</span><strong>{{ pending }}</strong><i class="bi bi-hourglass-split"></i></div>
+<div class="stat-card"><span>Approved</span><strong>{{ approved }}</strong><i class="bi bi-check-circle"></i></div>
+<div class="stat-card"><span>Ordered</span><strong>{{ ordered }}</strong><i class="bi bi-truck"></i></div>
+<div class="stat-card"><span>Delivered</span><strong>{{ delivered }}</strong><i class="bi bi-box2-heart"></i></div>
+</div>
+<div class="panel">
+<div class="table-responsive">
+<table class="table align-middle">
+<thead><tr><th>Request</th><th>Ingredient</th><th>Qty</th><th>Priority</th><th>Status</th><th>Requested By</th><th>Action</th></tr></thead>
+<tbody>
+{% for item in requests %}
+<tr>
+<td><strong>PR-{{ item.pk|stringformat:"04d" }}</strong><div class="muted">{{ item.created_at|date:"M d, Y" }}</div></td>
+<td>{{ item.ingredient.name }}</td>
+<td>{{ item.requested_quantity }} {{ item.ingredient.unit }}</td>
+<td><span class="priority-{{ item.priority|lower }}">{{ item.get_priority_display }}</span></td>
+<td><span class="status-badge status-{{ item.status|lower }}">{{ item.get_status_display }}</span></td>
+<td>{{ item.requested_by.username|default:"System" }}</td>
+<td>
+{% if item.status == 'PENDING' %}
+<form method="post" action="{% url 'procurement_approve' item.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-success">Approve</button></form>
+<form method="post" action="{% url 'procurement_reject' item.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Reject</button></form>
+{% else %}<span class="muted">No action</span>{% endif %}
+</td>
+</tr>
+{% empty %}<tr><td colspan="7"><div class="empty-mini py-5">No procurement requests yet.</div></td></tr>{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+{% endblock %}

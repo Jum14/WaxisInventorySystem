@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Users · Waxi's{% endblock %}
+{% block page_title %}User Management{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>Users</h1><p>Manage Owner, Manager, and Crew accounts.</p></div><a href="{% url 'accounts:create_user' %}" class="btn btn-primary"><i class="bi bi-person-plus me-2"></i>Add User</a></div>
+<div class="panel">
+<div class="table-responsive">
+<table class="table align-middle">
+<thead><tr><th>User</th><th>Role</th><th>Email</th><th>Status</th><th>Last Login</th><th>Action</th></tr></thead>
+<tbody>
+{% for item in users %}
+<tr>
+<td><strong>{{ item.get_full_name|default:item.username }}</strong><div class="muted">@{{ item.username }}</div></td>
+<td><span class="role-badge role-{{ item.profile.role|lower }}">{{ item.profile.get_role_display }}</span></td>
+<td>{{ item.email|default:"—" }}</td>
+<td>{% if item.is_active %}<span class="status-badge status-good">Active</span>{% else %}<span class="status-badge status-out">Disabled</span>{% endif %}</td>
+<td>{{ item.last_login|date:"M d, Y H:i"|default:"Never" }}</td>
+<td>
+{% if item != request.user %}
+<form method="post" action="{% url 'accounts:toggle_user' item.pk %}">{% csrf_token %}<button class="btn btn-sm btn-outline-dark">{% if item.is_active %}Disable{% else %}Enable{% endif %}</button></form>
+{% else %}<span class="muted">Current user</span>{% endif %}
+</td>
+</tr>
+{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+{% endblock %}

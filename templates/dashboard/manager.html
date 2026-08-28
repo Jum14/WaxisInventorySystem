@@ -1,0 +1,272 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Manager Dashboard · INVENTIQ
+{% endblock %}
+
+{% block page_title %}
+    Manager Dashboard
+{% endblock %}
+
+
+{% block content %}
+
+<div class="page-heading">
+
+    <div>
+
+        <h1>
+            Good day, Manager.
+        </h1>
+
+        <p>
+            Monitor inventory and daily operational activity.
+        </p>
+
+    </div>
+
+
+    <a
+        href="{% url 'inventory' %}"
+        class="btn btn-primary"
+    >
+
+        <i class="bi bi-box-seam me-2"></i>
+
+        View Inventory
+
+    </a>
+
+</div>
+
+
+<div class="stats-grid">
+
+    <div class="stat-card">
+
+        <span>
+            Total Ingredients
+        </span>
+
+        <strong>
+            {{ total }}
+        </strong>
+
+        <i class="bi bi-box-seam"></i>
+
+    </div>
+
+
+    <div class="stat-card warning">
+
+        <span>
+            Low Stock
+        </span>
+
+        <strong>
+            {{ low }}
+        </strong>
+
+        <i class="bi bi-exclamation-triangle"></i>
+
+    </div>
+
+
+    <div class="stat-card danger">
+
+        <span>
+            Critical / Out
+        </span>
+
+        <strong>
+            {{ critical }}
+        </strong>
+
+        <i class="bi bi-x-octagon"></i>
+
+    </div>
+
+
+    <div class="stat-card">
+
+        <span>
+            Pending Procurement
+        </span>
+
+        <strong>
+            {{ pending }}
+        </strong>
+
+        <i class="bi bi-cart3"></i>
+
+    </div>
+
+</div>
+
+
+<div class="dashboard-grid">
+
+
+    <!-- INVENTORY OVERVIEW -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>
+                Inventory Overview
+            </h3>
+
+            <a href="{% url 'inventory' %}">
+                View all
+            </a>
+
+        </div>
+
+
+        <div class="table-responsive">
+
+            <table class="table align-middle">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Ingredient
+                        </th>
+
+                        <th>
+                            Stock
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody>
+
+                {% for item in ingredients|slice:":8" %}
+
+                    <tr>
+
+                        <td>
+
+                            <strong>
+                                {{ item.name }}
+                            </strong>
+
+                            <div class="muted">
+                                {{ item.get_category_display }}
+                            </div>
+
+                        </td>
+
+
+                        <td>
+                            {{ item.quantity }} {{ item.unit }}
+                        </td>
+
+
+                        <td>
+
+                            <span class="status-badge status-{{ item.status|lower }}">
+
+                                {{ item.status_label }}
+
+                            </span>
+
+                        </td>
+
+                    </tr>
+
+
+                {% empty %}
+
+                    <tr>
+
+                        <td colspan="3">
+                            No ingredients yet.
+                        </td>
+
+                    </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- RECENT ACTIVITY -->
+
+    <div class="panel">
+
+        <div class="panel-header">
+
+            <h3>
+                Recent Activity
+            </h3>
+
+            <a href="{% url 'transactions' %}">
+                All transactions
+            </a>
+
+        </div>
+
+
+        {% for tx in transactions %}
+
+            <div class="activity-row">
+
+                <div class="activity-icon">
+
+                    <i class="bi bi-arrow-down-circle"></i>
+
+                </div>
+
+
+                <div>
+
+                    <strong>
+                        {{ tx.user.username|default:"System" }}
+                    </strong>
+
+                    <p>
+                        {{ tx.get_transaction_type_display }}
+                        ·
+                        {{ tx.ingredient.name }}
+                    </p>
+
+                </div>
+
+
+                <small>
+                    {{ tx.created_at|date:"M d, H:i" }}
+                </small>
+
+            </div>
+
+
+        {% empty %}
+
+            <div class="empty-mini">
+                No activity yet.
+            </div>
+
+        {% endfor %}
+
+    </div>
+
+</div>
+
+{% endblock %}

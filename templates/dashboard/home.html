@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block title %}
+    Dashboard | INVENTIQ
+{% endblock %}
+
+
+{% block content %}
+
+<div class="dashboard-container">
+
+    <h1>
+        INVENTIQ
+    </h1>
+
+    <p>
+        Welcome,
+        <strong>
+            {{ request.user.get_full_name|default:request.user.username }}
+        </strong>
+    </p>
+
+
+    <div class="dashboard-card">
+
+        <h2>
+            Account Information
+        </h2>
+
+
+        <p>
+            Username:
+            <strong>
+                {{ request.user.username }}
+            </strong>
+        </p>
+
+
+        <p>
+            Role:
+            <strong>
+                {{ request.user.profile.get_role_display }}
+            </strong>
+        </p>
+
+    </div>
+
+</div>
+
+{% endblock %}

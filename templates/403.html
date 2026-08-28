@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Access Denied · Waxi's{% endblock %}
+{% block page_title %}Access Denied{% endblock %}
+{% block content %}
+<div class="empty-state">
+    <div class="empty-icon"><i class="bi bi-shield-lock-fill"></i></div>
+    <h2>You don't have permission to view this page.</h2>
+    <p>Your account role does not have access to this section.</p>
+    <a href="{% url 'dashboard:home' %}" class="btn btn-primary">Return to Dashboard</a>
+</div>
+{% endblock %}

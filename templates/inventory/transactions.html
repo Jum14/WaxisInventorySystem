@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Transactions · Waxi's{% endblock %}
+{% block page_title %}Stock Transactions{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>{% if request.user.profile.role == 'CREW' %}My Transactions{% else %}Stock Transactions{% endif %}</h1><p>Trace every inventory movement.</p></div></div>
+<div class="panel">
+<div class="table-responsive">
+<table class="table align-middle">
+<thead><tr><th>Date</th><th>Ingredient</th><th>Type</th><th>Quantity</th><th>Previous</th><th>Remaining</th><th>User</th><th>Reason</th></tr></thead>
+<tbody>
+{% for tx in transactions %}
+<tr>
+<td>{{ tx.created_at|date:"M d, Y H:i" }}</td>
+<td><strong>{{ tx.ingredient.name }}</strong></td>
+<td><span class="type-badge">{{ tx.get_transaction_type_display }}</span></td>
+<td>{{ tx.quantity }} {{ tx.ingredient.unit }}</td>
+<td>{{ tx.previous_stock }}</td>
+<td>{{ tx.remaining_stock }}</td>
+<td>{{ tx.user.username|default:"System" }}</td>
+<td>{{ tx.reason|default:"—" }}</td>
+</tr>
+{% empty %}<tr><td colspan="8"><div class="empty-mini py-5">No transactions yet.</div></td></tr>{% endfor %}
+</tbody>
+</table>
+</div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Waxi's{% endblock %}
+{% block page_title %}{{ title }}{% endblock %}
+{% block content %}
+<div class="page-heading"><div><h1>{{ title }}</h1><p>Maintain accurate ingredient information.</p></div></div>
+<div class="panel form-panel">
+<form method="post">
+{% csrf_token %}
+{% if form.non_field_errors %}<div class="alert alert-danger">{{ form.non_field_errors }}</div>{% endif %}
+<div class="form-grid">
+{% for field in form %}
+<div class="{% if field.name == 'reason' %}full{% endif %}">
+<label class="form-label">{{ field.label }}</label>
+{{ field }}
+{% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+</div>
+{% endfor %}
+</div>
+<div class="form-actions"><a href="{% url 'inventory' %}" class="btn btn-light">Cancel</a><button class="btn btn-primary" type="submit">Save Ingredient</button></div>
+</form>
+</div>
+{% endblock %}

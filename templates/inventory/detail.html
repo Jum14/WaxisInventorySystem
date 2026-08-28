@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ ingredient.name }} · Waxi's{% endblock %}
+{% block page_title %}Ingredient Details{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div><a href="{% url 'inventory' %}" class="back-link"><i class="bi bi-arrow-left"></i> Back to Inventory</a><h1>{{ ingredient.name }}</h1><p>{{ ingredient.get_category_display }}</p></div>
+    {% if can_manage %}<a href="{% url 'ingredient_edit' ingredient.pk %}" class="btn btn-outline-dark"><i class="bi bi-pencil me-2"></i>Edit</a>{% endif %}
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card"><span>Current Stock</span><strong>{{ ingredient.quantity }}</strong><small>{{ ingredient.unit }}</small></div>
+    <div class="stat-card"><span>Minimum Level</span><strong>{{ ingredient.minimum_stock }}</strong><small>{{ ingredient.unit }}</small></div>
+    <div class="stat-card"><span>Maximum Level</span><strong>{{ ingredient.maximum_stock }}</strong><small>{{ ingredient.unit }}</small></div>
+    <div class="stat-card"><span>Status</span><strong class="status-text-{{ ingredient.status|lower }}">{{ ingredient.status_label }}</strong></div>
+</div>
+
+<div class="dashboard-grid">
+    <div class="panel">
+        <div class="panel-header"><h3>Ingredient Information</h3></div>
+        <div class="detail-grid">
+            <div><span>Category</span><strong>{{ ingredient.get_category_display }}</strong></div>
+            <div><span>Unit</span><strong>{{ ingredient.unit }}</strong></div>
+            <div><span>Supplier</span><strong>{{ ingredient.supplier|default:"—" }}</strong></div>
+            <div><span>Expiration</span><strong>{{ ingredient.expiration_date|date:"M d, Y"|default:"—" }}</strong></div>
+        </div>
+    </div>
+    <div class="panel">
+        <div class="panel-header"><h3>Stock History</h3></div>
+        {% for tx in transactions %}
+        <div class="activity-row">
+            <div class="activity-icon"><i class="bi bi-arrow-left-right"></i></div>
+            <div><strong>{{ tx.get_transaction_type_display }}</strong><p>{{ tx.user.username|default:"System" }} · {{ tx.quantity }} {{ ingredient.unit }}</p></div>
+            <small>{{ tx.created_at|date:"M d, H:i" }}</small>
+        </div>
+        {% empty %}<div class="empty-mini">No stock history yet.</div>{% endfor %}
+    </div>
+</div>
+{% endblock %}
