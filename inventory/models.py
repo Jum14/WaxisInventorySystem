@@ -14,7 +14,16 @@ class Ingredient(models.Model):
     unit = models.CharField(max_length=20, default="kg")
     minimum_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     maximum_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    supplier = models.CharField(max_length=150, blank=True)
+    # Legacy free-text supplier kept for backward compat during migration, new FK preferred
+    supplier = models.CharField(max_length=150, blank=True, help_text="Legacy free-text (migrated to supplier_fk)")
+    supplier_fk = models.ForeignKey(
+        "suppliers.Supplier",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ingredients",
+        help_text="Linked supplier (preferred)",
+    )
     expiration_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

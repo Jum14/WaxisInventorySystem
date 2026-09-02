@@ -11,6 +11,8 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
     {% block extra_head %}{% endblock %}
 </head>
@@ -91,6 +93,16 @@
                 >
                     <i class="bi bi-cart3"></i>
                     <span>Procurement</span>
+                </a>
+
+
+                <!-- SUPPLIERS -->
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'list' and request.resolver_match.namespace == 'suppliers' %}active{% endif %}"
+                    href="{% url 'suppliers:list' %}"
+                >
+                    <i class="bi bi-truck"></i>
+                    <span>Suppliers</span>
                 </a>
 
 
@@ -312,6 +324,9 @@
             sidebar.classList.toggle("show");
         }
     }
+    document.body.addEventListener('htmx:configRequest', (e) => {
+        e.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    });
 </script>
 
 {% block extra_js %}{% endblock %}

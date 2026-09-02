@@ -10,4 +10,5 @@ urlpatterns = [
     path("forecast/", include("forecasting.urls")),
     path("reports/", include("reports.urls")),
     path("audit/", include("audit.urls")),
+    path("suppliers/", include("suppliers.urls")),
 ]

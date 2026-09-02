@@ -3,9 +3,9 @@ from .models import Ingredient, StockTransaction
 
 @admin.register(Ingredient)
 class IngredientAdmin(admin.ModelAdmin):
-    list_display = ("name", "category", "quantity", "unit", "minimum_stock", "status", "updated_at")
-    list_filter = ("category",)
-    search_fields = ("name", "supplier")
+    list_display = ("name", "category", "quantity", "unit", "minimum_stock", "status", "supplier_fk", "updated_at")
+    list_filter = ("category", "supplier_fk")
+    search_fields = ("name", "supplier", "supplier_fk__company_name")
 
 @admin.register(StockTransaction)
 class StockTransactionAdmin(admin.ModelAdmin):

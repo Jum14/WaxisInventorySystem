@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Suppliers · Waxi's{% endblock %}
+{% block page_title %}Suppliers{% endblock %}
+{% block content %}
+<div class="page-heading">
+    <div><h1>Suppliers</h1><p>Vendor directory feeding procurement dropdowns. Contact info routed to PO emails.</p></div>
+    <a href="{% url 'suppliers:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg me-2"></i>Add Supplier</a>
+</div>
+
+<div class="panel">
+    <form method="get" class="filter-bar">
+        <div class="search-box" style="flex:1">
+            <i class="bi bi-search"></i>
+            <input name="q" value="{{ query }}" placeholder="Search company, contact, email..."
+                hx-get="{% url 'suppliers:list' %}"
+                hx-trigger="keyup changed delay:400ms"
+                hx-target="#supplier-rows"
+                hx-select="#supplier-rows"
+                hx-push-url="true"
+                autocomplete="off">
+        </div>
+        <select name="category" class="form-select">
+            <option value="">All Categories</option>
+            {% for value,label in categories %}<option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
+        </select>
+        <select name="status" class="form-select">
+            <option value="">All</option>
+            <option value="active" {% if selected_status == "active" %}selected{% endif %}>Active</option>
+            <option value="inactive" {% if selected_status == "inactive" %}selected{% endif %}>Inactive</option>
+        </select>
+        <button class="btn btn-dark" type="submit">Filter</button>
+        <a class="btn btn-light" href="{% url 'suppliers:list' %}">Reset</a>
+    </form>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead><tr><th>Company</th><th>Category</th><th>Contact</th><th>Lead Time</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+            <tbody id="supplier-rows">
+                {% include "suppliers/_list_rows.html" %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

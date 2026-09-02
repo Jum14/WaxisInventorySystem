@@ -1,0 +1,14 @@
+{% for s in suppliers %}
+<tr>
+    <td><strong>{{ s.company_name }}</strong><div class="muted">{{ s.email|default:"No email" }}</div></td>
+    <td>{{ s.get_category_display }}</td>
+    <td>{{ s.contact_person|default:"—" }}<div class="muted">{{ s.phone }}</div></td>
+    <td>{{ s.lead_time_days }} days</td>
+    <td>{% if s.is_active %}<span class="badge bg-success">Active</span>{% else %}<span class="badge bg-secondary">Inactive</span>{% endif %}</td>
+    <td>{{ s.updated_at|date:"M d, Y" }}</td>
+    <td>
+        <a href="{% url 'suppliers:edit' s.pk %}" class="btn btn-sm btn-light">Edit</a>
+        <form method="post" action="{% url 'suppliers:toggle' s.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm {% if s.is_active %}btn-outline-warning{% else %}btn-outline-success{% endif %}">{% if s.is_active %}Deactivate{% else %}Activate{% endif %}</button></form>
+    </td>
+</tr>
+{% empty %}<tr><td colspan="7"><div class="empty-mini py-5">No suppliers found. Add your first vendor.</div></td></tr>{% endfor %}

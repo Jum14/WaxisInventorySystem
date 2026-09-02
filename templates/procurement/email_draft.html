@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}PO Email Draft · PR-{{ obj.pk|stringformat:"04d" }}{% endblock %}
+{% block page_title %}PO Email Draft - PR-{{ obj.pk|stringformat:"04d" }}{% endblock %}
+{% block content %}
+<div class="panel" style="max-width:800px">
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h5 class="mb-1">{{ subject }}</h5>
+      <div class="muted">Ingredient: <strong>{{ obj.ingredient.name }}</strong> · {{ obj.requested_quantity }} {{ obj.ingredient.unit }} · Priority {{ obj.get_priority_display }} · Supplier: {% if obj.supplier %}{{ obj.supplier.company_name }} ({{ obj.supplier.email }}){% elif obj.ingredient.supplier_fk %}{{ obj.ingredient.supplier_fk.company_name }} ({{ obj.ingredient.supplier_fk.email }}){% else %}No linked supplier{% endif %}</div>
+    </div>
+    <a href="{% url 'procurement' %}" class="btn btn-light btn-sm">Back</a>
+  </div>
+  <div class="mb-3">
+    <label class="form-label fw-semibold">Subject</label>
+    <input class="form-control" value="{{ subject }}" readonly onclick="this.select()">
+  </div>
+  <div class="mb-3">
+    <label class="form-label fw-semibold">Email Body (Gemini Generated)</label>
+    <textarea class="form-control" rows="12" readonly onclick="this.select()">{{ body }}</textarea>
+  </div>
+  <div class="d-flex gap-2">
+    <button class="btn btn-primary" onclick="navigator.clipboard.writeText(document.querySelector('textarea').value); alert('Copied to clipboard');"><i class="bi bi-clipboard me-1"></i> Copy</button>
+    {% if obj.supplier and obj.supplier.email %}<a href="mailto:{{ obj.supplier.email }}?subject={{ subject|urlencode }}&body={{ body|urlencode }}" class="btn btn-success"><i class="bi bi-envelope me-1"></i> Open Mail Client</a>{% endif %}
+  </div>
+  <div class="mt-4 alert alert-info"><i class="bi bi-info-circle me-1"></i> This draft is generated via <code>GEMINI_API_KEY</code> (gemini-1.5-flash). If key not set, deterministic template is used. Set <code>GEMINI_API_KEY</code> env for live AI.</div>
+</div>
+{% endblock %}

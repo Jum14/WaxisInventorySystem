@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}AI Alerts · Waxi's{% endblock %}
+{% block page_title %}AI Procurement Alerts{% endblock %}
+{% block content %}
+<div class="panel">
+  <div class="table-responsive">
+    <table class="table align-middle">
+      <thead><tr><th>Ingredient</th><th>Suggested</th><th>Usage</th><th>Days Left</th><th>Risk</th><th>Status</th><th>Created</th></tr></thead>
+      <tbody>
+        {% for a in alerts %}
+        <tr><td>{{ a.ingredient.name }}</td><td>{{ a.suggested_quantity }} {{ a.ingredient.unit }}</td><td>{{ a.daily_usage }}/day</td><td>{{ a.days_until_stockout }}</td><td><span class="risk risk-{{ a.risk|lower }}">{{ a.risk }}</span></td><td><span class="status-badge status-{{ a.status|lower }}">{{ a.get_status_display }}</span></td><td>{{ a.created_at|date:"M d, Y H:i" }}</td></tr>
+        {% empty %}<tr><td colspan="7"><div class="empty-mini py-5">No alerts.</div></td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

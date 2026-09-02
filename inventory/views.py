@@ -21,14 +21,14 @@ def can_manage_inventory(user):
 
 @login_required
 def inventory_list(request):
-    ingredients = Ingredient.objects.all()
+    ingredients = Ingredient.objects.select_related("supplier_fk").all()
     q = request.GET.get("q", "").strip()
     category = request.GET.get("category", "")
     status = request.GET.get("status", "")
 
     if q:
         ingredients = ingredients.filter(
-            Q(name__icontains=q) | Q(supplier__icontains=q)
+            Q(name__icontains=q) | Q(supplier__icontains=q) | Q(supplier_fk__company_name__icontains=q)
         )
     if category:
         ingredients = ingredients.filter(category=category)
@@ -36,6 +36,12 @@ def inventory_list(request):
     ingredients = list(ingredients)
     if status:
         ingredients = [item for item in ingredients if item.status == status]
+
+    # HTMX partial search - return only table rows
+    if request.htmx:
+        return render(request, "inventory/_list_rows.html", {
+            "ingredients": ingredients,
+        })
 
     return render(request, "inventory/list.html", {
         "ingredients": ingredients,
@@ -45,6 +51,18 @@ def inventory_list(request):
         "query": q,
         "can_manage": can_manage_inventory(request.user),
     })
+
+
+@login_required
+def inventory_search_partial(request):
+    """HTMX endpoint for live search autocomplete - returns filtered rows as HTML fragment."""
+    q = request.GET.get("q", "").strip()
+    qs = Ingredient.objects.select_related("supplier_fk").order_by("name")
+    if q:
+        qs = qs.filter(Q(name__icontains=q) | Q(supplier__icontains=q) | Q(supplier_fk__company_name__icontains=q))[:10]
+    else:
+        qs = qs[:10]
+    return render(request, "inventory/_search_results.html", {"ingredients": qs, "query": q})
 
 @login_required
 def ingredient_detail(request, pk):

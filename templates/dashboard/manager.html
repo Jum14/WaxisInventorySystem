@@ -104,6 +104,42 @@
 </div>
 
 
+<div class="panel mb-3">
+  <div class="panel-header">
+    <h3><i class="bi bi-robot me-1"></i> AI Executive Summary</h3>
+    <div>
+      {% if ai_summary %}
+        <span class="badge bg-success">Live</span>
+      {% else %}
+        <a hx-get="{% url 'dashboard:ai_summary' %}" hx-target="#ai-summary-box" hx-swap="innerHTML" class="btn btn-sm btn-outline-primary">Generate with Gemini</a>
+      {% endif %}
+    </div>
+  </div>
+  <div id="ai-summary-box" class="p-2">
+    {% if ai_summary %}
+      <div class="alert alert-light border mb-0" style="font-size:0.95rem">{{ ai_summary }}</div>
+    {% else %}
+      <div class="muted" style="font-size:0.9rem">Click Generate to get an AI health report (requires <code>GEMINI_API_KEY</code>). Shows pending, low/critical analysis + recommendation.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="panel mb-3">
+  <div class="panel-header"><h3>Storage Distribution (Frozen/Chilled/Dry)</h3><small class="muted">{{ weekly_movements }} movements in last 7 days · Ordered: {{ ordered }}</small></div>
+  <div style="max-width:520px; margin:auto"><canvas id="storageChartManager"></canvas></div>
+</div>
+{{ chart_data|json_script:"chart-data-manager" }}
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+  const el = document.getElementById('chart-data-manager');
+  if(!el || !window.Chart) return;
+  const data = JSON.parse(el.textContent);
+  const ctx = document.getElementById('storageChartManager');
+  if(!ctx) return;
+  new Chart(ctx, {type:'doughnut', data:{labels:data.labels, datasets:[{data:data.counts, backgroundColor:['#F25212','#461712','#7AC74F','#5BC0BE','#FDE74C']}]}, options:{plugins:{legend:{position:'bottom'}}}});
+});
+</script>
+
 <div class="dashboard-grid">
 
 

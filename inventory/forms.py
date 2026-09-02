@@ -7,7 +7,7 @@ class IngredientForm(forms.ModelForm):
         fields = [
             "name", "category", "quantity", "unit",
             "minimum_stock", "maximum_stock",
-            "supplier", "expiration_date",
+            "supplier_fk", "supplier", "expiration_date",
         ]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
@@ -16,8 +16,13 @@ class IngredientForm(forms.ModelForm):
             "unit": forms.TextInput(attrs={"class": "form-control"}),
             "minimum_stock": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "min": "0"}),
             "maximum_stock": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "min": "0"}),
-            "supplier": forms.TextInput(attrs={"class": "form-control"}),
+            "supplier_fk": forms.Select(attrs={"class": "form-select"}),
+            "supplier": forms.TextInput(attrs={"class": "form-control", "placeholder": "Legacy free-text (use dropdown above)"}),
             "expiration_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
+        }
+        labels = {
+            "supplier_fk": "Supplier (linked)",
+            "supplier": "Supplier (legacy text)",
         }
 
 class StockDeductionForm(forms.Form):

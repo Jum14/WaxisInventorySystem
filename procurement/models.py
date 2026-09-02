@@ -19,7 +19,17 @@ class ProcurementRequest(models.Model):
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, related_name="procurement_requests"
     )
+    supplier = models.ForeignKey(
+        "suppliers.Supplier",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="procurement_requests",
+        help_text="Assigned supplier for fulfillment",
+    )
     requested_quantity = models.DecimalField(max_digits=12, decimal_places=2)
+    delivered_quantity = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, help_text="Actual delivered qty")
+    expected_date = models.DateField(null=True, blank=True)
     requested_by = models.ForeignKey(
         User, on_delete=models.SET_NULL, null=True, related_name="procurement_requests"
     )
@@ -29,6 +39,8 @@ class ProcurementRequest(models.Model):
     priority = models.CharField(max_length=20, choices=Priority.choices, default=Priority.NORMAL)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
     reason = models.CharField(max_length=255, blank=True)
+    auto_generated = models.BooleanField(default=False, help_text="Created by AI forecasting")
+    notes = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

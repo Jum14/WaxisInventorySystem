@@ -8,6 +8,25 @@
 <div class="stat-card"><span>Transactions</span><strong>{{ total_transactions }}</strong></div>
 <div class="stat-card"><span>Procurement Requests</span><strong>{{ total_procurements }}</strong></div>
 </div>
+<div class="panel mb-3">
+  <div class="panel-header"><h3>Storage Distribution & Status</h3></div>
+  <div class="row">
+    <div class="col-md-6" style="max-width:400px"><canvas id="reportCategory"></canvas></div>
+    <div class="col-md-6" style="max-width:400px"><canvas id="reportStatus"></canvas></div>
+  </div>
+  {{ chart_category|json_script:"chart-cat" }}
+  {{ chart_status|json_script:"chart-status" }}
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+    if(window.Chart){
+      const catEl=document.getElementById('chart-cat'); const statEl=document.getElementById('chart-status');
+      if(catEl){ const d=JSON.parse(catEl.textContent); new Chart(document.getElementById('reportCategory'),{type:'doughnut',data:{labels:d.labels,datasets:[{data:d.counts,backgroundColor:['#F25212','#461712','#7AC74F']}]},options:{plugins:{legend:{position:'bottom'}}}});}
+      if(statEl){ const d=JSON.parse(statEl.textContent); new Chart(document.getElementById('reportStatus'),{type:'bar',data:{labels:d.labels,datasets:[{label:'Ingredients',data:d.counts,backgroundColor:['#7AC74F','#FDE74C','#F25212','#6c757d']}]},options:{scales:{y:{beginAtZero:true}}}});}
+    }
+  });
+  </script>
+</div>
+
 <div class="dashboard-grid">
 <div class="panel"><div class="panel-header"><h3>Recent Stock Movement</h3></div>
 {% for tx in transactions %}
@@ -16,7 +35,7 @@
 </div>
 <div class="panel"><div class="panel-header"><h3>Procurement Overview</h3></div>
 {% for item in procurements %}
-<div class="health-row"><div><strong>PR-{{ item.pk|stringformat:"04d" }}</strong><small>{{ item.ingredient.name }} · {{ item.requested_quantity }} {{ item.ingredient.unit }}</small></div><span class="status-badge status-{{ item.status|lower }}">{{ item.get_status_display }}</span></div>
+<div class="health-row"><div><strong>PR-{{ item.pk|stringformat:"04d" }}</strong><small>{{ item.ingredient.name }} · {{ item.requested_quantity }} {{ item.ingredient.unit }} {% if item.supplier %}({{ item.supplier.company_name }}){% endif %}</small></div><span class="status-badge status-{{ item.status|lower }}">{{ item.get_status_display }}</span></div>
 {% empty %}<div class="empty-mini">No procurement data.</div>{% endfor %}
 </div>
 </div>

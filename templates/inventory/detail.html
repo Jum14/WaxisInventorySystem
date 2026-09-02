@@ -20,8 +20,8 @@
         <div class="detail-grid">
             <div><span>Category</span><strong>{{ ingredient.get_category_display }}</strong></div>
             <div><span>Unit</span><strong>{{ ingredient.unit }}</strong></div>
-            <div><span>Supplier</span><strong>{{ ingredient.supplier|default:"—" }}</strong></div>
-            <div><span>Expiration</span><strong>{{ ingredient.expiration_date|date:"M d, Y"|default:"—" }}</strong></div>
+            <div><span>Supplier</span><strong>{% if ingredient.supplier_fk %}<a href="{% url 'suppliers:list' %}">{{ ingredient.supplier_fk.company_name }}</a> ({{ ingredient.supplier_fk.email }}){% else %}{{ ingredient.supplier|default:"—" }}{% endif %}</strong></div>
+            <div><span>Expiration</span><strong>{{ ingredient.expiration_date|date:"M d, Y"|default:"—" }}</strong>{% if ingredient.expiration_date %}{% if ingredient.expiration_date < today %}<span class="badge bg-danger ms-1">Expired</span>{% endif %}{% endif %}</div>
         </div>
     </div>
     <div class="panel">
