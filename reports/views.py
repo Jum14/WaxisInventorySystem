@@ -33,8 +33,9 @@ def reports(request):
         .annotate(count=Count("id"))
         .order_by("day")
     )
-    chart_category = json.dumps({"labels": [d["category"] for d in by_category], "counts": [d["count"] for d in by_category]})
-    chart_status = json.dumps({"labels": list(by_status.keys()), "counts": list(by_status.values())})
+    # Brand palette mapping for charts
+    chart_category = json.dumps({"labels": [d["category"] for d in by_category], "counts": [d["count"] for d in by_category], "colors": ["#FE5F10", "#871F09", "#FED216"][:len(by_category)]})
+    chart_status = json.dumps({"labels": list(by_status.keys()), "counts": list(by_status.values()), "colors": ["#198754", "#FED216", "#FE5F10", "#6c757d"]})
 
     return render(request, "reports/dashboard.html", {
         "ingredients": ingredients,

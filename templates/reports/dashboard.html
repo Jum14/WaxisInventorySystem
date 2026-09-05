@@ -20,8 +20,8 @@
   document.addEventListener('DOMContentLoaded', function(){
     if(window.Chart){
       const catEl=document.getElementById('chart-cat'); const statEl=document.getElementById('chart-status');
-      if(catEl){ const d=JSON.parse(catEl.textContent); new Chart(document.getElementById('reportCategory'),{type:'doughnut',data:{labels:d.labels,datasets:[{data:d.counts,backgroundColor:['#F25212','#461712','#7AC74F']}]},options:{plugins:{legend:{position:'bottom'}}}});}
-      if(statEl){ const d=JSON.parse(statEl.textContent); new Chart(document.getElementById('reportStatus'),{type:'bar',data:{labels:d.labels,datasets:[{label:'Ingredients',data:d.counts,backgroundColor:['#7AC74F','#FDE74C','#F25212','#6c757d']}]},options:{scales:{y:{beginAtZero:true}}}});}
+      if(catEl){ const d=JSON.parse(catEl.textContent); const cols=d.colors||['#FE5F10','#871F09','#FED216']; new Chart(document.getElementById('reportCategory'),{type:'doughnut',data:{labels:d.labels,datasets:[{data:d.counts,backgroundColor:cols}]},options:{plugins:{legend:{position:'bottom'}}}});}
+      if(statEl){ const d=JSON.parse(statEl.textContent); const cols=d.colors||['#198754','#FED216','#FE5F10','#6c757d']; new Chart(document.getElementById('reportStatus'),{type:'bar',data:{labels:d.labels,datasets:[{label:'Ingredients',data:d.counts,backgroundColor:cols}]},options:{scales:{y:{beginAtZero:true}}}});}
     }
   });
   </script>

@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function(){
   const data = JSON.parse(el.textContent);
   const ctx = document.getElementById('storageChartManager');
   if(!ctx) return;
-  new Chart(ctx, {type:'doughnut', data:{labels:data.labels, datasets:[{data:data.counts, backgroundColor:['#F25212','#461712','#7AC74F','#5BC0BE','#FDE74C']}]}, options:{plugins:{legend:{position:'bottom'}}}});
+  new Chart(ctx, {type:'doughnut', data:{labels:data.labels, datasets:[{data:data.counts, backgroundColor:['#FE5F10','#871F09','#FED216','#198754','#6c757d']}]}, options:{plugins:{legend:{position:'bottom'}}}});
 });
 </script>
 
