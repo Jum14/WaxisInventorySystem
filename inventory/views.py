@@ -126,17 +126,39 @@ def deduct_stock(request):
                 ingredient.quantity = ingredient.quantity - amount
                 ingredient.save(update_fields=["quantity", "updated_at"])
 
+                # Map reason to transaction_type for SDG 12 tracking
+                tx_type = StockTransaction.Type.DEDUCTED
+                if reason in ("SPOILAGE_WASTE", "DAMAGED"):
+                    tx_type = StockTransaction.Type.SPOILAGE
+                # Also detect if ingredient hit zero for AI variance logging
+                hit_zero = ingredient.quantity == 0
+                actual_zero_date = None
+                if hit_zero:
+                    from django.utils import timezone
+                    actual_zero_date = timezone.now().date()
+
                 StockTransaction.objects.create(
                     ingredient=ingredient,
                     user=request.user,
-                    transaction_type=StockTransaction.Type.SPOILAGE
-                    if reason == "SPOILAGE"
-                    else StockTransaction.Type.DEDUCTED,
+                    transaction_type=tx_type,
                     quantity=amount,
                     previous_stock=previous,
                     remaining_stock=ingredient.quantity,
-                    reason=reason.replace("_", " ").title(),
+                    reason=reason,
+                    notes=reason.replace("_", " ").title(),
                 )
+                # Log AI variance if hit zero
+                if hit_zero and actual_zero_date:
+                    try:
+                        from forecasting.models import AIProcurementAlert
+                        pending = AIProcurementAlert.objects.filter(
+                            ingredient=ingredient, predicted_stockout_date__isnull=False, actual_zero_date__isnull=True
+                        ).order_by("-created_at").first()
+                        if pending:
+                            pending.actual_zero_date = actual_zero_date
+                            pending.save(update_fields=["actual_zero_date", "variance_days", "updated_at"])
+                    except Exception:
+                        pass
 
                 log_action(
                     request.user,

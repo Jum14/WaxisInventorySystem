@@ -6,7 +6,7 @@ class IngredientForm(forms.ModelForm):
         model = Ingredient
         fields = [
             "name", "category", "quantity", "unit",
-            "minimum_stock", "maximum_stock",
+            "minimum_stock", "maximum_stock", "unit_cost",
             "supplier_fk", "supplier", "expiration_date",
         ]
         widgets = {
@@ -16,6 +16,7 @@ class IngredientForm(forms.ModelForm):
             "unit": forms.TextInput(attrs={"class": "form-control"}),
             "minimum_stock": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "min": "0"}),
             "maximum_stock": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "min": "0"}),
+            "unit_cost": forms.NumberInput(attrs={"class": "form-control", "step": "0.01", "min": "0", "placeholder": "PHP per unit"}),
             "supplier_fk": forms.Select(attrs={"class": "form-select"}),
             "supplier": forms.TextInput(attrs={"class": "form-control", "placeholder": "Legacy free-text (use dropdown above)"}),
             "expiration_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
@@ -23,6 +24,7 @@ class IngredientForm(forms.ModelForm):
         labels = {
             "supplier_fk": "Supplier (linked)",
             "supplier": "Supplier (legacy text)",
+            "unit_cost": "Unit Cost (₱)",
         }
 
 class StockDeductionForm(forms.Form):
@@ -38,8 +40,8 @@ class StockDeductionForm(forms.Form):
     )
     reason = forms.ChoiceField(
         choices=[
-            ("ORDER_PREPARATION", "Order Preparation"),
-            ("SPOILAGE", "Spoilage"),
+            ("NORMAL_USAGE", "Normal Usage"),
+            ("SPOILAGE_WASTE", "Spoilage/Waste"),
             ("DAMAGED", "Damaged"),
             ("OTHER", "Other"),
         ],

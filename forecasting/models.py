@@ -24,9 +24,19 @@ class AIProcurementAlert(models.Model):
     risk = models.CharField(max_length=10, choices=Risk.choices, default=Risk.LOW)
     reason = models.CharField(max_length=255, blank=True)
     status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    # AI Variance Logging: predicted vs actual stockout
+    actual_zero_date = models.DateField(null=True, blank=True, help_text="Date ingredient actually hit zero")
+    variance_days = models.IntegerField(null=True, blank=True, help_text="actual - predicted days (positive = late, negative = early)")
+    accuracy_note = models.CharField(max_length=255, blank=True)
     created_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if self.predicted_stockout_date and self.actual_zero_date:
+            delta = self.actual_zero_date - self.predicted_stockout_date
+            self.variance_days = delta.days
+        super().save(*args, **kwargs)
 
     class Meta:
         ordering = ["-created_at"]

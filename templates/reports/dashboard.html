@@ -1,8 +1,76 @@
 {% extends "base.html" %}
 {% block title %}Reports · Waxi's{% endblock %}
 {% block page_title %}Reports & Insights{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
 {% block content %}
-<div class="page-heading"><div><h1>Reports</h1><p>Inventory, stock movement, procurement, and consumption overview.</p></div><button class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer me-2"></i>Print Report</button></div>
+<div class="page-heading"><div><h1>Reports</h1><p>Inventory, stock movement, procurement, and consumption overview.</p></div><div class="d-flex gap-2"><a href="{% url 'reports_export' %}" class="btn btn-outline-dark"><i class="bi bi-download me-1"></i>Export CSV</a><button class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer me-2"></i>Print Report</button></div></div>
+
+<!-- Executive Financial & SDG 12 Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-red-100 shadow-sm">
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Total Inventory Value</p>
+        <h3 class="text-3xl font-bold text-red-900 mt-2">₱ {{ total_inventory_value|floatformat:2 }}</h3>
+        <p class="text-xs text-gray-400 mt-1">Capital currently tied up in stockroom</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-red-100 shadow-sm">
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Procurement (This Month)</p>
+        <h3 class="text-3xl font-bold text-red-900 mt-2">₱ {{ monthly_expenditure|floatformat:2 }}</h3>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-orange-200 shadow-sm bg-orange-50/30">
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Spoilage & Waste (SDG 12)</p>
+        <h3 class="text-3xl font-bold text-orange-600 mt-2">{{ spoilage_rate }}%</h3>
+        <p class="text-xs text-gray-500 mt-1">Total items deducted due to expiration/damage</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-red-100 shadow-sm">
+        <h4 class="text-lg font-bold text-red-900 mb-4">Top 5 Fast-Movers</h4>
+        <ul class="space-y-3">
+            {% for item in fast_movers %}
+            <li class="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
+                <span class="font-medium text-gray-800">{{ item.name }}</span>
+                <span class="text-gray-500">{{ item.total_deducted }} {{ item.unit }}/month</span>
+            </li>
+            {% empty %}
+            <li class="text-sm text-gray-400">No data available.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-red-100 shadow-sm flex flex-col">
+        <h4 class="text-lg font-bold text-red-900 mb-4">Supplier Fulfillment Reliability</h4>
+        <table class="w-full text-sm text-left">
+            <thead class="text-xs text-gray-500 uppercase bg-gray-50">
+                <tr>
+                    <th class="py-2 px-3">Supplier</th>
+                    <th class="py-2 px-3">Avg Delay</th>
+                    <th class="py-2 px-3">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in supplier_metrics %}
+                <tr class="border-b border-gray-50">
+                    <td class="py-3 px-3 font-medium text-gray-800">{{ supplier.name }}</td>
+                    <td class="py-3 px-3 text-gray-500">{{ supplier.actual_lead_time }} days</td>
+                    <td class="py-3 px-3">
+                        {% if supplier.is_reliable %}
+                            <span class="text-green-600 font-medium">Reliable</span>
+                        {% else %}
+                            <span class="text-red-500 font-medium">Delayed</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="py-4 text-center text-sm text-gray-400">No supplier data available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Legacy stats -->
 <div class="stats-grid">
 <div class="stat-card"><span>Ingredients</span><strong>{{ total_ingredients }}</strong></div>
 <div class="stat-card"><span>Transactions</span><strong>{{ total_transactions }}</strong></div>

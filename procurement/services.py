@@ -33,7 +33,14 @@ def _get_genai():
     try:
         import google.generativeai as genai
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        # API now requires gemini-3.6-flash (2.5 no longer available to new users)
+        for name in ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-flash-latest", "gemini-3.6-flash", "gemini-3.5-flash-lite"]:
+            try:
+                model = genai.GenerativeModel(name)
+                return genai, model
+            except Exception:
+                continue
+        model = genai.GenerativeModel("gemini-3.6-flash")
         return genai, model
     except Exception as e:
         logger.warning("Gemini init failed: %s", e)

@@ -11,6 +11,8 @@ from inventory.models import Ingredient, StockTransaction
 
 from .forms import ProcurementForm
 from .models import ProcurementRequest
+
+from inventory.models import StockTransaction as InvStockTx
 from .services import generate_po_email
 
 
@@ -156,13 +158,18 @@ def mark_delivered(request, pk):
             quantity=delivered_qty,
             previous_stock=previous,
             remaining_stock=ingredient.quantity,
-            reason=f"Procurement PR-{obj.pk:04d} Delivered",
+            reason=StockTransaction.Reason.NORMAL_USAGE,
+            notes=f"Procurement PR-{obj.pk:04d} Delivered",
         )
 
+        from django.utils import timezone
         obj.status = ProcurementRequest.Status.DELIVERED
         obj.delivered_quantity = delivered_qty
+        obj.actual_delivery_date = timezone.now().date()
+        if not obj.expected_delivery_date and obj.expected_date:
+            obj.expected_delivery_date = obj.expected_date
         obj.approved_by = obj.approved_by or request.user
-        obj.save(update_fields=["status", "delivered_quantity", "approved_by", "updated_at"])
+        obj.save(update_fields=["status", "delivered_quantity", "actual_delivery_date", "expected_delivery_date", "approved_by", "updated_at"])
 
         log_action(
             request.user,
