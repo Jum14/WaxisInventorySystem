@@ -16,10 +16,18 @@
                 <label class="form-label fw-semibold">{{ field.label }}</label>
                 {{ field }}
                 {% for error in field.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+                {% if field.name == "quantity" %}<div class="form-text">Tablet: use numeric keypad. Min 0.01.</div>{% endif %}
             </div>
             {% endfor %}
-            <button class="btn btn-primary btn-lg w-100" type="submit">Confirm Deduction</button>
+            <button class="btn btn-primary btn-lg w-100" type="submit" style="min-height:56px; font-size:1.1rem">Confirm Deduction</button>
         </form>
+        <script>
+          // Enhance quantity input for tablet numeric keypad
+          document.addEventListener('DOMContentLoaded', function(){
+            const qty = document.querySelector('input[name="quantity"]');
+            if(qty){ qty.setAttribute('inputmode','decimal'); qty.setAttribute('type','text'); qty.setAttribute('pattern','[0-9]*'); }
+          });
+        </script>
     </div>
     <div class="panel tip-panel">
         <span class="eyebrow">Kitchen Reminder</span>

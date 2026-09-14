@@ -8,8 +8,19 @@
 </div>
 
 <div class="panel">
-    <form method="get" class="filter-bar">
-        <div class="search-box"><i class="bi bi-search"></i><input name="q" value="{{ query }}" placeholder="Search ingredients or suppliers..."></div>
+    <form method="get" class="filter-bar" id="inventory-filter">
+        <div class="search-box position-relative" style="flex:1">
+            <i class="bi bi-search"></i>
+            <input name="q" value="{{ query }}" placeholder="Search ingredients or suppliers..."
+                hx-get="{% url 'inventory_search_partial' %}"
+                hx-trigger="keyup changed delay:300ms"
+                hx-target="#search-results"
+                hx-indicator="#search-indicator"
+                hx-include="[name='q']"
+                autocomplete="off">
+            <span id="search-indicator" class="htmx-indicator position-absolute end-0 top-50 translate-middle-y me-2"><span class="spinner-border spinner-border-sm text-muted"></span></span>
+            <div id="search-results" class="search-autocomplete panel position-absolute w-100 mt-1" style="z-index:10; display:none; max-height:300px; overflow:auto;"></div>
+        </div>
         <select name="category" class="form-select">
             <option value="">All Categories</option>
             {% for value,label in categories %}<option value="{{ value }}" {% if selected_category == value %}selected{% endif %}>{{ label }}</option>{% endfor %}
@@ -24,6 +35,19 @@
         <button class="btn btn-dark" type="submit">Filter</button>
         <a class="btn btn-light" href="{% url 'inventory' %}">Reset</a>
     </form>
+    <script>
+      document.addEventListener('htmx:afterRequest', function(e){
+        const target = document.getElementById('search-results');
+        if(e.detail.target === target){
+            target.style.display = target.innerHTML.trim() ? 'block' : 'none';
+        }
+      });
+      document.addEventListener('click', function(e){
+        const box = document.getElementById('search-results');
+        const input = document.querySelector('input[name="q"]');
+        if(!box.contains(e.target) && e.target !== input){ box.style.display='none'; }
+      });
+    </script>
 
     <div class="table-responsive">
         <table class="table table-hover align-middle inventory-table">
@@ -31,7 +55,7 @@
             <tbody>
             {% for item in ingredients %}
             <tr>
-                <td><a class="table-link" href="{% url 'ingredient_detail' item.pk %}">{{ item.name }}</a><div class="muted">{{ item.supplier|default:"No supplier" }}</div></td>
+                <td><a class="table-link" href="{% url 'ingredient_detail' item.pk %}">{{ item.name }}</a><div class="muted">{% if item.supplier_fk %}{{ item.supplier_fk.company_name }}{% else %}{{ item.supplier|default:"No supplier" }}{% endif %}</div></td>
                 <td>{{ item.get_category_display }}</td>
                 <td><strong>{{ item.quantity }}</strong> {{ item.unit }}</td>
                 <td>{{ item.minimum_stock }} {{ item.unit }}</td>

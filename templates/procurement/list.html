@@ -16,9 +16,9 @@
 <tbody>
 {% for item in requests %}
 <tr>
-<td><strong>PR-{{ item.pk|stringformat:"04d" }}</strong><div class="muted">{{ item.created_at|date:"M d, Y" }}</div></td>
-<td>{{ item.ingredient.name }}</td>
-<td>{{ item.requested_quantity }} {{ item.ingredient.unit }}</td>
+<td><strong>PR-{{ item.pk|stringformat:"04d" }}</strong><div class="muted">{{ item.created_at|date:"M d, Y" }}</div>{% if item.auto_generated %}<span class="badge bg-info" style="font-size:0.65rem">AI</span>{% endif %}</td>
+<td>{{ item.ingredient.name }}<div class="muted" style="font-size:0.75rem">{% if item.supplier %}{{ item.supplier.company_name }}{% elif item.ingredient.supplier_fk %}{{ item.ingredient.supplier_fk.company_name }}{% else %}{{ item.ingredient.supplier|default:"No supplier" }}{% endif %}</div></td>
+<td>{{ item.requested_quantity }} {{ item.ingredient.unit }}{% if item.delivered_quantity %}<div class="muted" style="font-size:0.75rem">Delivered: {{ item.delivered_quantity }}</div>{% endif %}{% if item.expected_date %}<div class="muted" style="font-size:0.75rem">Exp: {{ item.expected_date }}</div>{% endif %}</td>
 <td><span class="priority-{{ item.priority|lower }}">{{ item.get_priority_display }}</span></td>
 <td><span class="status-badge status-{{ item.status|lower }}">{{ item.get_status_display }}</span></td>
 <td>{{ item.requested_by.username|default:"System" }}</td>
@@ -26,7 +26,15 @@
 {% if item.status == 'PENDING' %}
 <form method="post" action="{% url 'procurement_approve' item.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-success">Approve</button></form>
 <form method="post" action="{% url 'procurement_reject' item.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Reject</button></form>
-{% else %}<span class="muted">No action</span>{% endif %}
+{% elif item.status == 'APPROVED' %}
+<form method="post" action="{% url 'procurement_ordered' item.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-primary">Mark Ordered</button></form>
+<a href="{% url 'procurement_email' item.pk %}" class="btn btn-sm btn-outline-secondary">Email Draft</a>
+{% elif item.status == 'ORDERED' %}
+<form method="post" action="{% url 'procurement_delivered' item.pk %}" class="d-inline">{% csrf_token %}<button class="btn btn-sm btn-success">Mark Delivered</button></form>
+<a href="{% url 'procurement_email' item.pk %}" class="btn btn-sm btn-outline-secondary">Email</a>
+{% else %}
+<a href="{% url 'procurement_email' item.pk %}" class="btn btn-sm btn-light">View Email</a>
+{% endif %}
 </td>
 </tr>
 {% empty %}<tr><td colspan="7"><div class="empty-mini py-5">No procurement requests yet.</div></td></tr>{% endfor %}

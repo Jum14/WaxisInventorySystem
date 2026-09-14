@@ -21,14 +21,14 @@ def can_manage_inventory(user):
 
 @login_required
 def inventory_list(request):
-    ingredients = Ingredient.objects.all()
+    ingredients = Ingredient.objects.select_related("supplier_fk").all()
     q = request.GET.get("q", "").strip()
     category = request.GET.get("category", "")
     status = request.GET.get("status", "")
 
     if q:
         ingredients = ingredients.filter(
-            Q(name__icontains=q) | Q(supplier__icontains=q)
+            Q(name__icontains=q) | Q(supplier__icontains=q) | Q(supplier_fk__company_name__icontains=q)
         )
     if category:
         ingredients = ingredients.filter(category=category)
@@ -36,6 +36,12 @@ def inventory_list(request):
     ingredients = list(ingredients)
     if status:
         ingredients = [item for item in ingredients if item.status == status]
+
+    # HTMX partial search - return only table rows
+    if request.htmx:
+        return render(request, "inventory/_list_rows.html", {
+            "ingredients": ingredients,
+        })
 
     return render(request, "inventory/list.html", {
         "ingredients": ingredients,
@@ -45,6 +51,18 @@ def inventory_list(request):
         "query": q,
         "can_manage": can_manage_inventory(request.user),
     })
+
+
+@login_required
+def inventory_search_partial(request):
+    """HTMX endpoint for live search autocomplete - returns filtered rows as HTML fragment."""
+    q = request.GET.get("q", "").strip()
+    qs = Ingredient.objects.select_related("supplier_fk").order_by("name")
+    if q:
+        qs = qs.filter(Q(name__icontains=q) | Q(supplier__icontains=q) | Q(supplier_fk__company_name__icontains=q))[:10]
+    else:
+        qs = qs[:10]
+    return render(request, "inventory/_search_results.html", {"ingredients": qs, "query": q})
 
 @login_required
 def ingredient_detail(request, pk):
@@ -108,17 +126,39 @@ def deduct_stock(request):
                 ingredient.quantity = ingredient.quantity - amount
                 ingredient.save(update_fields=["quantity", "updated_at"])
 
+                # Map reason to transaction_type for SDG 12 tracking
+                tx_type = StockTransaction.Type.DEDUCTED
+                if reason in ("SPOILAGE_WASTE", "DAMAGED"):
+                    tx_type = StockTransaction.Type.SPOILAGE
+                # Also detect if ingredient hit zero for AI variance logging
+                hit_zero = ingredient.quantity == 0
+                actual_zero_date = None
+                if hit_zero:
+                    from django.utils import timezone
+                    actual_zero_date = timezone.now().date()
+
                 StockTransaction.objects.create(
                     ingredient=ingredient,
                     user=request.user,
-                    transaction_type=StockTransaction.Type.SPOILAGE
-                    if reason == "SPOILAGE"
-                    else StockTransaction.Type.DEDUCTED,
+                    transaction_type=tx_type,
                     quantity=amount,
                     previous_stock=previous,
                     remaining_stock=ingredient.quantity,
-                    reason=reason.replace("_", " ").title(),
+                    reason=reason,
+                    notes=reason.replace("_", " ").title(),
                 )
+                # Log AI variance if hit zero
+                if hit_zero and actual_zero_date:
+                    try:
+                        from forecasting.models import AIProcurementAlert
+                        pending = AIProcurementAlert.objects.filter(
+                            ingredient=ingredient, predicted_stockout_date__isnull=False, actual_zero_date__isnull=True
+                        ).order_by("-created_at").first()
+                        if pending:
+                            pending.actual_zero_date = actual_zero_date
+                            pending.save(update_fields=["actual_zero_date", "variance_days", "updated_at"])
+                    except Exception:
+                        pass
 
                 log_action(
                     request.user,

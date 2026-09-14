@@ -104,6 +104,53 @@
 </div>
 
 
+<div class="panel mb-3">
+  <div class="panel-header">
+    <h3><i class="bi bi-robot me-1"></i> AI Executive Summary</h3>
+    <div>
+      {% if ai_summary %}<span class="badge bg-success">Live</span>{% else %}<a hx-get="{% url 'dashboard:ai_summary' %}" hx-target="#ai-summary-box-owner" hx-swap="innerHTML" class="btn btn-sm btn-outline-primary">Regenerate</a>{% endif %}
+      <a href="{% url 'forecasting:forecast' %}" class="btn btn-sm btn-light ms-1">Forecast</a>
+    </div>
+  </div>
+  <div id="ai-summary-box-owner" class="p-2">
+    {% if ai_summary %}
+      <div class="alert alert-light border mb-0">{{ ai_summary }}</div>
+    {% else %}
+      <div class="muted">AI summary unavailable (set GEMINI_API_KEY).</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="panel mb-3">
+  <div class="panel-header"><h3>Storage Distribution</h3><small class="muted">{{ weekly_movements }} movements 7d · Ordered {{ ordered }}</small></div>
+  <div style="max-width:520px; margin:auto"><canvas id="storageChartOwner"></canvas></div>
+  {{ chart_data|json_script:"chart-data-owner" }}
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+    const el=document.getElementById('chart-data-owner'); if(!el || !window.Chart) return;
+    const data=JSON.parse(el.textContent);
+    const ctx=document.getElementById('storageChartOwner'); if(!ctx) return;
+    new Chart(ctx,{type:'doughnut', data:{labels:data.labels, datasets:[{data:data.counts, backgroundColor:['#FE5F10','#871F09','#FED216','#198754','#6c757d']}]}, options:{plugins:{legend:{position:'bottom'}}}});
+  });
+  </script>
+</div>
+
+{% if forecast_highlights %}
+<div class="panel mb-3">
+  <div class="panel-header"><h3>Forecast Highlights (Top Risk)</h3><a href="{% url 'forecasting:forecast' %}">View all</a></div>
+  <div class="table-responsive">
+    <table class="table table-sm align-middle">
+      <thead><tr><th>Ingredient</th><th>Days Left</th><th>Risk</th><th>Reorder</th></tr></thead>
+      <tbody>
+        {% for r in forecast_highlights %}
+        <tr><td>{{ r.ingredient.name }}</td><td>{{ r.days }} days</td><td><span class="risk risk-{{ r.risk|lower }}">{{ r.risk }}</span></td><td>{{ r.reorder }} {{ r.ingredient.unit }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+
 <div class="dashboard-grid">
 
 

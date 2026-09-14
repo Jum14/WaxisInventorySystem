@@ -10,7 +10,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
 
-    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=brand-dark-871F09">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/htmx.org@1.9.12" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
     {% block extra_head %}{% endblock %}
 </head>
@@ -26,19 +29,30 @@
     ========================== -->
     <aside class="sidebar" id="sidebar">
 
-        <!-- BRAND -->
-        <a href="{% url 'dashboard:home' %}" class="brand">
+        <!-- BRAND - Restructured flex row: LEFT W-Mark / CENTER INVENTIQ / RIGHT encircled logo -->
+        <a href="{% url 'dashboard:home' %}" class="brand flex items-center justify-between gap-3">
 
+            <!-- LEFT: Waxi's W Letter Mark -->
             <img
-                src="{% static 'images/waxis-logo.png' %}"
-                alt="INVENTIQ Inventory System Logo"
-                class="brand-logo"
+                src="{% static 'images/waxis_w.png' %}"
+                alt="Waxi's W Letter Mark"
+                class="h-8 w-auto object-contain flex-shrink-0"
             >
 
-            <div class="brand-text">
+            <!-- CENTER: INVENTIQ + Inventory System -->
+            <div class="brand-text flex-1 text-left">
                 <strong>INVENTIQ</strong>
                 <small>Inventory System</small>
             </div>
+
+            <!-- RIGHT: Encircled system icon - white circle -->
+            <span class="bg-white rounded-full p-2 shadow-sm flex items-center justify-center flex-shrink-0" style="width:38px; height:38px;">
+                <img
+                    src="{% static 'images/waxis-logo.png' %}"
+                    alt="System Icon"
+                    class="w-6 h-6 object-contain"
+                >
+            </span>
 
         </a>
 
@@ -91,6 +105,16 @@
                 >
                     <i class="bi bi-cart3"></i>
                     <span>Procurement</span>
+                </a>
+
+
+                <!-- SUPPLIERS -->
+                <a
+                    class="nav-link {% if request.resolver_match.url_name == 'list' and request.resolver_match.namespace == 'suppliers' %}active{% endif %}"
+                    href="{% url 'suppliers:list' %}"
+                >
+                    <i class="bi bi-truck"></i>
+                    <span>Suppliers</span>
                 </a>
 
 
@@ -312,6 +336,9 @@
             sidebar.classList.toggle("show");
         }
     }
+    document.body.addEventListener('htmx:configRequest', (e) => {
+        e.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+    });
 </script>
 
 {% block extra_js %}{% endblock %}

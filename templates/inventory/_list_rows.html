@@ -1,0 +1,11 @@
+{% for item in ingredients %}
+<tr>
+    <td><a class="table-link" href="{% url 'ingredient_detail' item.pk %}">{{ item.name }}</a><div class="muted">{% if item.supplier_fk %}{{ item.supplier_fk.company_name }}{% else %}{{ item.supplier|default:"No supplier" }}{% endif %}</div></td>
+    <td>{{ item.get_category_display }}</td>
+    <td><strong>{{ item.quantity }}</strong> {{ item.unit }}</td>
+    <td>{{ item.minimum_stock }} {{ item.unit }}</td>
+    <td><span class="status-badge status-{{ item.status|lower }}">{{ item.status_label }}</span></td>
+    <td>{{ item.updated_at|date:"M d, Y H:i" }}</td>
+    <td><a href="{% url 'ingredient_detail' item.pk %}" class="btn btn-sm btn-light">View</a></td>
+</tr>
+{% empty %}<tr><td colspan="7"><div class="empty-mini py-5">No ingredients found.</div></td></tr>{% endfor %}

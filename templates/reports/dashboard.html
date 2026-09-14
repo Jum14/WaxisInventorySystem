@@ -1,13 +1,100 @@
 {% extends "base.html" %}
 {% block title %}Reports · Waxi's{% endblock %}
 {% block page_title %}Reports & Insights{% endblock %}
+{% block extra_head %}
+<script src="https://cdn.tailwindcss.com"></script>
+{% endblock %}
 {% block content %}
-<div class="page-heading"><div><h1>Reports</h1><p>Inventory, stock movement, procurement, and consumption overview.</p></div><button class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer me-2"></i>Print Report</button></div>
+<div class="page-heading"><div><h1>Reports</h1><p>Inventory, stock movement, procurement, and consumption overview.</p></div><div class="d-flex gap-2"><a href="{% url 'reports_export' %}" class="btn btn-outline-dark"><i class="bi bi-download me-1"></i>Export CSV</a><button class="btn btn-outline-dark" onclick="window.print()"><i class="bi bi-printer me-2"></i>Print Report</button></div></div>
+
+<!-- Executive Financial & SDG 12 Metrics -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-red-100 shadow-sm">
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Total Inventory Value</p>
+        <h3 class="text-3xl font-bold text-red-900 mt-2">₱ {{ total_inventory_value|floatformat:2 }}</h3>
+        <p class="text-xs text-gray-400 mt-1">Capital currently tied up in stockroom</p>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-red-100 shadow-sm">
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Procurement (This Month)</p>
+        <h3 class="text-3xl font-bold text-red-900 mt-2">₱ {{ monthly_expenditure|floatformat:2 }}</h3>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-orange-200 shadow-sm bg-orange-50/30">
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide">Spoilage & Waste (SDG 12)</p>
+        <h3 class="text-3xl font-bold text-orange-600 mt-2">{{ spoilage_rate }}%</h3>
+        <p class="text-xs text-gray-500 mt-1">Total items deducted due to expiration/damage</p>
+    </div>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+    <div class="bg-white p-6 rounded-xl border border-red-100 shadow-sm">
+        <h4 class="text-lg font-bold text-red-900 mb-4">Top 5 Fast-Movers</h4>
+        <ul class="space-y-3">
+            {% for item in fast_movers %}
+            <li class="flex justify-between items-center text-sm border-b border-gray-50 pb-2">
+                <span class="font-medium text-gray-800">{{ item.name }}</span>
+                <span class="text-gray-500">{{ item.total_deducted }} {{ item.unit }}/month</span>
+            </li>
+            {% empty %}
+            <li class="text-sm text-gray-400">No data available.</li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div class="bg-white p-6 rounded-xl border border-red-100 shadow-sm flex flex-col">
+        <h4 class="text-lg font-bold text-red-900 mb-4">Supplier Fulfillment Reliability</h4>
+        <table class="w-full text-sm text-left">
+            <thead class="text-xs text-gray-500 uppercase bg-gray-50">
+                <tr>
+                    <th class="py-2 px-3">Supplier</th>
+                    <th class="py-2 px-3">Avg Delay</th>
+                    <th class="py-2 px-3">Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in supplier_metrics %}
+                <tr class="border-b border-gray-50">
+                    <td class="py-3 px-3 font-medium text-gray-800">{{ supplier.name }}</td>
+                    <td class="py-3 px-3 text-gray-500">{{ supplier.actual_lead_time }} days</td>
+                    <td class="py-3 px-3">
+                        {% if supplier.is_reliable %}
+                            <span class="text-green-600 font-medium">Reliable</span>
+                        {% else %}
+                            <span class="text-red-500 font-medium">Delayed</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="3" class="py-4 text-center text-sm text-gray-400">No supplier data available.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Legacy stats -->
 <div class="stats-grid">
 <div class="stat-card"><span>Ingredients</span><strong>{{ total_ingredients }}</strong></div>
 <div class="stat-card"><span>Transactions</span><strong>{{ total_transactions }}</strong></div>
 <div class="stat-card"><span>Procurement Requests</span><strong>{{ total_procurements }}</strong></div>
 </div>
+<div class="panel mb-3">
+  <div class="panel-header"><h3>Storage Distribution & Status</h3></div>
+  <div class="row">
+    <div class="col-md-6" style="max-width:400px"><canvas id="reportCategory"></canvas></div>
+    <div class="col-md-6" style="max-width:400px"><canvas id="reportStatus"></canvas></div>
+  </div>
+  {{ chart_category|json_script:"chart-cat" }}
+  {{ chart_status|json_script:"chart-status" }}
+  <script>
+  document.addEventListener('DOMContentLoaded', function(){
+    if(window.Chart){
+      const catEl=document.getElementById('chart-cat'); const statEl=document.getElementById('chart-status');
+      if(catEl){ const d=JSON.parse(catEl.textContent); const cols=d.colors||['#FE5F10','#871F09','#FED216']; new Chart(document.getElementById('reportCategory'),{type:'doughnut',data:{labels:d.labels,datasets:[{data:d.counts,backgroundColor:cols}]},options:{plugins:{legend:{position:'bottom'}}}});}
+      if(statEl){ const d=JSON.parse(statEl.textContent); const cols=d.colors||['#198754','#FED216','#FE5F10','#6c757d']; new Chart(document.getElementById('reportStatus'),{type:'bar',data:{labels:d.labels,datasets:[{label:'Ingredients',data:d.counts,backgroundColor:cols}]},options:{scales:{y:{beginAtZero:true}}}});}
+    }
+  });
+  </script>
+</div>
+
 <div class="dashboard-grid">
 <div class="panel"><div class="panel-header"><h3>Recent Stock Movement</h3></div>
 {% for tx in transactions %}
@@ -16,7 +103,7 @@
 </div>
 <div class="panel"><div class="panel-header"><h3>Procurement Overview</h3></div>
 {% for item in procurements %}
-<div class="health-row"><div><strong>PR-{{ item.pk|stringformat:"04d" }}</strong><small>{{ item.ingredient.name }} · {{ item.requested_quantity }} {{ item.ingredient.unit }}</small></div><span class="status-badge status-{{ item.status|lower }}">{{ item.get_status_display }}</span></div>
+<div class="health-row"><div><strong>PR-{{ item.pk|stringformat:"04d" }}</strong><small>{{ item.ingredient.name }} · {{ item.requested_quantity }} {{ item.ingredient.unit }} {% if item.supplier %}({{ item.supplier.company_name }}){% endif %}</small></div><span class="status-badge status-{{ item.status|lower }}">{{ item.get_status_display }}</span></div>
 {% empty %}<div class="empty-mini">No procurement data.</div>{% endfor %}
 </div>
 </div>

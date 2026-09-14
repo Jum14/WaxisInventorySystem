@@ -14,7 +14,17 @@ class Ingredient(models.Model):
     unit = models.CharField(max_length=20, default="kg")
     minimum_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     maximum_stock = models.DecimalField(max_digits=12, decimal_places=2, default=0)
-    supplier = models.CharField(max_length=150, blank=True)
+    unit_cost = models.DecimalField(max_digits=12, decimal_places=2, default=0, help_text="PHP per unit - for inventory valuation")
+    # Legacy free-text supplier kept for backward compat during migration, new FK preferred
+    supplier = models.CharField(max_length=150, blank=True, help_text="Legacy free-text (migrated to supplier_fk)")
+    supplier_fk = models.ForeignKey(
+        "suppliers.Supplier",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="ingredients",
+        help_text="Linked supplier (preferred)",
+    )
     expiration_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -52,6 +62,12 @@ class StockTransaction(models.Model):
         SPOILAGE = "SPOILAGE", "Spoilage"
         RETURN = "RETURN", "Return"
 
+    class Reason(models.TextChoices):
+        NORMAL_USAGE = "NORMAL_USAGE", "Normal Usage"
+        SPOILAGE_WASTE = "SPOILAGE_WASTE", "Spoilage/Waste"
+        DAMAGED = "DAMAGED", "Damaged"
+        OTHER = "OTHER", "Other"
+
     ingredient = models.ForeignKey(
         Ingredient, on_delete=models.CASCADE, related_name="transactions"
     )
@@ -62,7 +78,10 @@ class StockTransaction(models.Model):
     quantity = models.DecimalField(max_digits=12, decimal_places=2)
     previous_stock = models.DecimalField(max_digits=12, decimal_places=2)
     remaining_stock = models.DecimalField(max_digits=12, decimal_places=2)
-    reason = models.CharField(max_length=255, blank=True)
+    # SDG 12: structured reason for waste tracking
+    reason = models.CharField(max_length=20, choices=Reason.choices, default=Reason.NORMAL_USAGE)
+    # Keep free-text notes for details
+    notes = models.CharField(max_length=255, blank=True, help_text="Additional details")
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
